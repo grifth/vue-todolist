@@ -1,65 +1,99 @@
 <template>
   <div id="app">
-    <input  type="text" v-model="itemNew" v-on:keyup.enter="addNew"/>
-    <ul>
-    	<li v-for="item in items" :class="{isStudent:item.student}" @click="turnRed(item)">
-    		{{item.name}}
+    <input  type="text" @keyup.enter="addNew" v-focus/>
+    <ul class="">
+    	<li :class="{editing:item===currentEditing}" v-for="(item,index) of todos">
+        <div class="view">
+            <input type="checkbox" v-model="item.completed">
+            <label @dblclick="currentEditing=item">{{item.title}}</label>
+            <button type="button" name="button" @dblclick="removeTodo(index)">X</button>
+        </div>
+        <input class="edit" v-model="item.title" @keyup.enter="currentEditing=null" @blur="currentEditing = null" >
     	</li>
     </ul>
   </div>
 </template>
 
 <script>
-import Storage from './localstorage'
+const todos = [
+  {
+    id:1,
+    title:'士郎',
+    completed:false
+  },
+  {
+    id:2,
+    title:'切嗣',
+    completed:false
+  },
+]
 
 export default {
+
   name: 'App',
     data () {
   	return {
-  		msg:'Type name and mark who is student',
-  		items:Storage.fetch(),//获取存在 storage 里面的键值对
-  		itemNew:''
+      todos,
+      currentEditing:null
   	}
   },
-    methods:{
-  	turnRed: function (item) {
-  		//逆反布尔值
-  		item.student = !item.student;
-  	},
-  	addNew:function () {
-  		this.items.push({
-  			name : this.itemNew,
-  			student : false
-  		});
-  		//清空文本栏
-  		this.itemNew = null;
-  	}
-  },
-  watch:{
+  methods:{
+    addNew(){
+      var todoText = event.target.value.trim()
+      if(!todoText.length){
+        return
+      }
+      var lastTodo = this.todos[this.todos.length-1]
+      var id = lastTodo ? lastTodo+1:1
+      this.todos.push({
+        id,
+        title:todoText,
+        completed:false
+      })
+      event.target.value=""
+    },
+    removeTodo(index){
+      this.todos.splice(index,1)
+    },
 
-		
-  	items:{
-					
-	  	 handler: function (items) {
-	      Storage.save(items);
-	    },									
-	  	deep:true						
-  	}
-  }
+  },
 
 }
 </script>
 
 <style>
-.isStudent {
-	color: red;
-}
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  width: 500px;
+  margin:0 auto;
+  border:1px solid red;
+}
+li{
+  list-style: none;
+  position: relative;
+  right: 10px;
+
+}
+
+button{
+  cursor:pointer;
+  position: absolute;
+  right:0;
+}
+.edit{
+  display: none;
+}
+
+.editing .edit{
+  display: block;
+  margin:0 auto;
+}
+.editing .view{
+  display: none;
 }
 </style>
